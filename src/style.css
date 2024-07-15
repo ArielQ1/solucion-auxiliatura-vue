@@ -53,6 +53,12 @@ button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
+.contenido-modal {
+  text-align: center;
+  & strong {
+    color: #646cff;
+  }
+}
 
 .card {
   padding: 2em;

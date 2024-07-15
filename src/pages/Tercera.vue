@@ -8,7 +8,7 @@
         <Modal :titulo="'Ponderación'" :estado="estadoModal" @cambiarEstado="cambiarEstadoModal">
           <div class="contenido-modal">
             <p><strong>Nota de {{ localStorageNombre }}</strong></p>
-            <h1 :style="{ color: colorTitulo }">{{ obtenerEstadoEstudiante() }}</h1>
+            <h1 :style="{ color: colorTitulo }">{{ obtenerEstadoEstudiante() }} con {{ localStorageNota }}</h1>
   
             <button type="button" class="btn btn-primary" @click="limpiarLocalStorage">Aceptar</button>
           </div>
@@ -84,7 +84,7 @@
   }
   
   .contenido-modal {
-    text-align: left;
+    text-align: center;
   }
   </style>
   

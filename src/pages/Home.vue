@@ -1,174 +1,208 @@
 <template>
-    <div class="home-container">
-      <h1>Formulario de Registro</h1>
-      <div class="form-container">
-        <form @submit.prevent="onSubmit" class="form-content">
-          <div class="form-group">
-            <label>Nombre</label>
-            <input type="text" v-model="form.nombre" placeholder="Ingrese su nombre">
-            <p v-if="errors.nombre" class="error-text">{{ errors.nombre }}</p>
+  <div class="section">
+    <div class="form-box">
+      <div class="form-value">
+        <form @submit.prevent="onSubmit">
+          <h2>Formulario de Registro</h2>
+          <div class="inputbox">
+            <p v-if="errors.nombre" class="error">{{ errors.nombre }}</p>
+            <input type="text" v-model="form.nombre" @blur="validateField('nombre')" />
+            <label>Nombres</label>
           </div>
-          <div class="form-group">
-            <label>Fecha de Nacimiento</label>
-            <input type="date" v-model="form.fechaNacimiento">
-            <p v-if="errors.fechaNacimiento" class="error-text">{{ errors.fechaNacimiento }}</p>
+          <div class="inputbox">
+            <p v-if="errors.fechaNacimiento" class="error">{{ errors.fechaNacimiento }}</p>
+            <input type="date" v-model="form.fechaNacimiento" @blur="validateField('fechaNacimiento')" />
+            <label>Fecha Nacimiento</label>
           </div>
-          <div class="form-group">
-            <label>Nota Estudiante</label>
-            <input type="number" v-model="form.notaEstudiante">
-            <p v-if="errors.notaEstudiante" class="error-text">{{ errors.notaEstudiante }}</p>
+          <div class="inputbox">
+            <p v-if="errors.notaEstudiante" class="error">{{ errors.notaEstudiante }}</p>
+            <input type="number" v-model="form.notaEstudiante" @blur="validateField('notaEstudiante')" />
+            <label>Nota</label>
           </div>
-          <button type="submit" @click="validar" class="validate-button">Validar</button>
-          
-          <div v-if="showModal" class="modal">
-            <div class="modal-content">
-              <h2>Estudiante {{ form.nombre }}</h2>
-              <p><strong>Fecha de Nacimiento:</strong> {{ form.fechaNacimiento }}</p>
-              <p><strong>Nota:</strong> {{ form.notaEstudiante }}</p>
-              <button @click="enviar">Enviar</button>
-            </div>
-          </div>
+          <button type="submit" @click="handleValidation">Validar</button>
         </form>
       </div>
     </div>
-  </template>
-  
-  <script>
-  import { ref } from 'vue';
-  
-  export default {
-    name: 'Home',
-    data() {
-      return {
-        form: {
-          nombre: '',
-          fechaNacimiento: '',
-          notaEstudiante: '',
-        },
-        errors: {
-          nombre: '',
-          fechaNacimiento: '',
-          notaEstudiante: '',
-        },
-        showModal: false,
-      };
-    },
-    methods: {
-      onSubmit() {
-        // Simulación de validación
-        this.validar();
-      },
-      validar() {
-        this.errors = {}; // Reiniciar errores
-        let formValid = true;
-  
-        // Validación del nombre
-        if (!this.form.nombre) {
-          this.errors.nombre = 'Nombre requerido';
-          formValid = false;
-        } else if (this.form.nombre.length < 3 || this.form.nombre.length > 25) {
-          this.errors.nombre = 'Nombre debe tener entre 3 y 25 caracteres';
-          formValid = false;
-        }
-  
-        // Validación de la fecha de nacimiento
-        if (!this.form.fechaNacimiento) {
-          this.errors.fechaNacimiento = 'Fecha de nacimiento requerida';
-          formValid = false;
+    <Modal :estado="estadoModal" @cambiarEstado="cambiarEstadoModal" titulo="Estado de la Validacion de Datos">
+      <div class="contenido-modal">
+        <strong>Nombre: </strong><p>{{ form.nombre }}</p>
+        <strong>Fecha de Nacimiento: </strong><p>{{ form.fechaNacimiento }}</p>
+        <strong>Nota: </strong><p>{{ form.notaEstudiante }}</p>
+        <p v-if="errors.nombre" style="color:red">{{ errors.nombre }}</p>
+        <p v-if="errors.fechaNacimiento" style="color:red">{{ errors.fechaNacimiento }}</p>
+        <p v-if="errors.notaEstudiante" style="color:red">{{ errors.notaEstudiante }}</p>
+        <button v-if="!errors.nombre && !errors.fechaNacimiento && !errors.notaEstudiante" @click="enviar">Enviar</button>
+      </div>
+    </Modal>
+  </div>
+</template>
+<script>
+import { ref } from 'vue';
+import Modal from '../components/Modal.vue';
+
+export default {
+  name: 'Home',
+  components: { Modal },
+  setup() {
+    const form = ref({
+      nombre: '',
+      fechaNacimiento: '',
+      notaEstudiante: '',
+    });
+
+    const errors = ref({});
+    const estadoModal = ref(false);
+
+    const validateField = (field) => {
+      if (field === 'nombre') {
+        if (!form.value.nombre) {
+          errors.value.nombre = 'Nombre requerido';
+        } else if (form.value.nombre.length < 3) {
+          errors.value.nombre = 'Nombre muy corto';
+        } else if (form.value.nombre.length > 25) {
+          errors.value.nombre = 'Nombre muy largo';
         } else {
-          const fechaNacimiento = new Date(this.form.fechaNacimiento);
-          const edad = new Date().getFullYear() - fechaNacimiento.getFullYear();
-          if (edad < 18) {
-            this.errors.fechaNacimiento = 'Debe ser mayor de edad';
-            formValid = false;
-          }
+          delete errors.value.nombre;
         }
-  
-        // Validación de la nota del estudiante
-        if (!this.form.notaEstudiante) {
-          this.errors.notaEstudiante = 'Nota requerida';
-          formValid = false;
-        } else if (this.form.notaEstudiante < 0 || this.form.notaEstudiante > 100) {
-          this.errors.notaEstudiante = 'Nota debe estar entre 0 y 100';
-          formValid = false;
+      } else if (field === 'fechaNacimiento') {
+        if (!form.value.fechaNacimiento) {
+          errors.value.fechaNacimiento = 'Fecha de nacimiento requerida';
+        } else {
+          delete errors.value.fechaNacimiento;
         }
-  
-        // Mostrar modal si el formulario es válido
-        if (formValid) {
-          this.showModal = true;
+      } else if (field === 'notaEstudiante') {
+        if (!form.value.notaEstudiante) {
+          errors.value.notaEstudiante = 'Nota requerida';
+        } else if (form.value.notaEstudiante < 0) {
+          errors.value.notaEstudiante = 'Nota muy baja tiene que ser mayor a 0';
+        } else if (form.value.notaEstudiante > 100) {
+          errors.value.notaEstudiante = 'Nota muy alta no debe ser mayor a 100';
+        } else {
+          delete errors.value.notaEstudiante;
         }
-      },
-      enviar() {
-        // Lógica para enviar los datos (almacenar en localStorage por ejemplo)
-        localStorage.setItem('nombre', this.form.nombre);
-        localStorage.setItem('fecha', this.form.fechaNacimiento);
-        localStorage.setItem('nota', this.form.notaEstudiante);
-  
-        // Cerrar modal y limpiar formulario
-        this.showModal = false;
-        this.form = {
-          nombre: '',
-          fechaNacimiento: '',
-          notaEstudiante: '',
-        };
-        this.errors = {
-          nombre: '',
-          fechaNacimiento: '',
-          notaEstudiante: '',
-        };
-      },
-    },
-  };
-  </script>
-  
+      }
+    };
+
+    const handleValidation = () => {
+      validateField('nombre');
+      validateField('fechaNacimiento');
+      validateField('notaEstudiante');
+      if (!errors.value.nombre && !errors.value.fechaNacimiento && !errors.value.notaEstudiante) {
+        estadoModal.value = true;
+      }
+    };
+
+    const onSubmit = () => {
+      handleValidation();
+    };
+
+    const cambiarEstadoModal = (estado) => {
+      estadoModal.value = estado;
+    };
+
+    const enviar = () => {
+      localStorage.setItem('nombre', form.value.nombre);
+      localStorage.setItem('fecha', form.value.fechaNacimiento);
+      localStorage.setItem('nota', form.value.notaEstudiante);
+      estadoModal.value = false;
+      form.value = {
+        nombre: '',
+        fechaNacimiento: '',
+        notaEstudiante: '',
+      };
+    };
+
+    return {
+      form,
+      errors,
+      estadoModal,
+      validateField,
+      handleValidation,
+      onSubmit,
+      cambiarEstadoModal,
+      enviar,
+    };
+  },
+};
+</script>
   <style scoped>
-  .home-container {
+
+.section{
     display: flex;
-    flex-direction: column;
-    align-items: center;
     justify-content: center;
-    height: 500px;
-  }
-  
-  .form-container {
-    margin-top: 20px;
-  }
-  
-  .form-content {
-    display: flex;
-    flex-direction: column;
     align-items: center;
-  }
-  
-  .form-group {
-    margin-bottom: 10px;
-  }
-  
-  .validate-button {
-    margin-top: 10px;
-  }
-  
-  .error-text {
-    color: red;
-  }
-  
-  .modal {
-    position: fixed;
-    top: 0;
-    left: 0;
+    height: 80vh;
     width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.form-box{
+    position: relative;
+    width: 400px;
+    height: 450px;
+    background: transparent;
+    border: 2px solid rgba(255,255,255,0.5);
+    border-radius: 20px;
+    backdrop-filter: blur(15px);
     display: flex;
     justify-content: center;
     align-items: center;
-  }
-  
-  .modal-content {
-    background-color: white;
-    padding: 20px;
-    border-radius: 8px;
+
+}
+
+h2{
+    font-size: 2em;
+    color: #fff;
     text-align: center;
-  }
-  </style>
+}
+
+.inputbox{
+    position: relative;
+    margin: 30px 0;
+    width: 310px;
+    border-bottom: 2px solid #fff;
+}
+.inputbox label{
+    position: absolute;
+    top: 50%;
+    left: 5px;
+    transform: translateY(-50%);
+    color: #fff;
+    font-size: 1em;
+    pointer-events: none;
+    transition: .5s;
+}
+
+input:focus ~ label,
+input:valid ~ label{
+top: -5px;
+}
+.inputbox input {
+    width: 100%;
+    height: 50px;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-size: 1em;
+    padding:0 35px 0 5px;
+    color: #fff;
+}
+.inputbox ion-icon{
+    position: absolute;
+    right: 8px;
+    color: #fff;
+    font-size: 1.2em;
+    top: 20px;
+}
+
+button{
+    width: 100%;
+}
+
+.error {
+  color: red;
+  font-size: x-small;
+}
+  
+
+</style>
   

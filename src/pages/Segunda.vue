@@ -77,7 +77,7 @@
   }
   
   .contenido-modal {
-    text-align: left;
+    text-align: center;
   }
   </style>
   
